@@ -3,37 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My todo list</title>
+    <title>Shopping Cart</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <main class="containe">
+    <header>
 
-        <h1>My To-Do List</h1>
+        <h1>My shopping cart</h1>
 
-        <form id="todo-form">
-            
-            <input
-            type="text"
-            id="todo-input"
-            placeholder="Enter your task.."
-            autocomplete="off"    
-            >
+        <div class="cart-icon">
+            cart: <span id="cart-count">0</span>
+        </div>
+    </header>
 
-            <button type="submit">add task</button>
+    <main>
 
-        </form>
+        <section class="products-section">
+            <h2>Available products</h2>
 
-        <p id="form-error"role="alert"></p>
+            <div id="products-container" class="products-container">
 
-        <ul id="todo-list"></ul>
 
-        <p id="task-count">Total tasks:0</p>
 
+
+
+            </div>
+
+        </section>
+
+        <section class="cart-section">
+
+            <h3>Your shopping cart</h3>
+
+            <div id="cart-items">
+                <p>Your cart is empty.</p>
+            </div>
+
+            <div class="cart-summary">
+
+                <h4>Total: ksh <span id="cart-total">0</span></h4>
+
+                <button id="clear-cart">Clear cart</button>
+
+                <button id="checkout">Checkout</button>
+
+            </div>
+
+        </section>
     </main>
 
-    <script type="module" src="js/app.js"></script>
+    <script src="app.js"></script>
+
     
 </body>
 </html>
