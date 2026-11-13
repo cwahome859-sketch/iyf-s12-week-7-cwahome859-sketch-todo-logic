@@ -1,268 +1,130 @@
-// Products
-const products = [
-    {
-        id: 1,
-        name: "Laptop",
-        price: 55000,
-        image: "https://placehold.co/300x200?text=Laptop"
-    },
-    {
-        id: 2,
-        name: "Headphones",
-        price: 2500,
-        image: "https://placehold.co/300x200?text=Headphones"
-    },
-    {
-        id: 3,
-        name: "Smartphone",
-        price: 30000,
-        image: "https://placehold.co/300x200?text=Smartphone"
-    },
-    {
-        id: 4,
-        name: "Smart Watch",
-        price: 5000,
-        image: "https://placehold.co/300x200?text=Smart+Watch"
-    }
-];
 
-// Shopping cart
-let cart = JSON.parse(localStorage.getItem("cart")) || [];
+import {
+    todos,
+    currentFilter,
+    setTodos,
+    setFilter
+} from "./state.js";
 
-// DOM elements
-const productsContainer = document.querySelector("#products-container");
-const cartItems = document.querySelector("#cart-items");
-const cartCount = document.querySelector("#cart-count");
-const cartTotal = document.querySelector("#cart-total");
-const clearCartButton = document.querySelector("#clear-cart");
-const checkoutButton = document.querySelector("#checkout");
 
-// Display products
-function displayProducts() {
+import {
+    loadTodos,
+    saveTodos
+} from "./storage.js";
 
-    productsContainer.innerHTML = "";
 
-    products.forEach(product => {
+import {
+    addTodo,
+    deleteTodo,
+    toggleTodo,
+    clearCompleted
+} from "./todo-logic.js";
 
-        const productCard = document.createElement("div");
 
-        productCard.classList.add("product-card");
+import { renderTodos } from "./ui.js";
 
-        productCard.innerHTML = `
-            <img src="${product.image}" alt="${product.name}">
 
-            <h3>${product.name}</h3>
+const todoForm = document.querySelector("#todo-form");
 
-            <p>KSh ${product.price.toLocaleString()}</p>
+const todoInput = document.querySelector("#todo-input");
 
-            <button data-id="${product.id}" class="add-to-cart">
-                Add to Cart
-            </button>
-        `;
+const errorMessage = document.querySelector("#error-message");
 
-        productsContainer.appendChild(productCard);
+const todoList = document.querySelector("#todo-list");
 
-    });
+const clearButton = document.querySelector("#clear-completed");
+
+const filterButtons = document.querySelectorAll("[data-filter]");
+
+
+function updateApp() {
+
+    saveTodos(todos);
+
+    renderTodos(todos, currentFilter);
 
 }
 
-// Add product to cart
-function addToCart(id) {
 
-    const product = products.find(item => item.id === id);
+setTodos(loadTodos());
 
-    if (!product) return;
+updateApp();
 
-    const existingItem = cart.find(item => item.id === id);
 
-    if (existingItem) {
-        existingItem.quantity++;
-    } else {
-        cart.push({
-            ...product,
-            quantity: 1
-        });
-    }
+todoForm.addEventListener("submit", function(event) {
 
-    saveCart();
-    displayCart();
+    event.preventDefault();
 
-}
+    const text = todoInput.value.trim();
 
-// Display shopping cart
-function displayCart() {
+    if (!text) {
 
-    cartItems.innerHTML = "";
+        errorMessage.textContent = "Please enter a task.";
 
-    if (cart.length === 0) {
-
-        cartItems.innerHTML = "<p>Your cart is empty.</p>";
+        return;
 
     }
 
-    cart.forEach(item => {
+    errorMessage.textContent = "";
 
-        const cartItem = document.createElement("div");
+    const id = Date.now();
 
-        cartItem.classList.add("cart-item");
+    setTodos(addTodo(todos, text, id));
 
-        cartItem.innerHTML = `
-            <div>
-                <h3>${item.name}</h3>
-                <p>KSh ${item.price.toLocaleString()}</p>
-            </div>
+    todoInput.value = "";
 
-            <div class="quantity-controls">
-
-                <button data-id="${item.id}" class="decrease">-</button>
-
-                <span>${item.quantity}</span>
-
-                <button data-id="${item.id}" class="increase">+</button>
-
-            </div>
-
-            <button data-id="${item.id}" class="remove-btn">
-                Remove
-            </button>
-        `;
-
-        cartItems.appendChild(cartItem);
-
-    });
-
-    updateCartSummary();
-
-}
-
-// Update cart summary
-function updateCartSummary() {
-
-    const totalItems = cart.reduce(
-        (total, item) => total + item.quantity, 0
-    );
-
-    const totalPrice = cart.reduce(
-        (total, item) => total + item.price * item.quantity, 0
-    );
-
-    cartCount.textContent = totalItems;
-
-    cartTotal.textContent = totalPrice.toLocaleString();
-
-}
-
-// Increase quantity
-function increaseQuantity(id) {
-
-    const item = cart.find(item => item.id === id);
-
-    if (item) {
-        item.quantity++;
-    }
-
-    saveCart();
-    displayCart();
-
-}
-
-// Decrease quantity
-function decreaseQuantity(id) {
-
-    const item = cart.find(item => item.id === id);
-
-    if (item) {
-
-        item.quantity--;
-
-        if (item.quantity <= 0) {
-            removeFromCart(id);
-            return;
-        }
-
-    }
-
-    saveCart();
-    displayCart();
-
-}
-
-// Remove product
-function removeFromCart(id) {
-
-    cart = cart.filter(item => item.id !== id);
-
-    saveCart();
-    displayCart();
-
-}
-
-// Clear shopping cart
-function clearCart() {
-
-    cart = [];
-
-    saveCart();
-    displayCart();
-
-}
-
-// Save cart to localStorage
-function saveCart() {
-
-    localStorage.setItem("cart", JSON.stringify(cart));
-
-}
-
-// Event listener for adding products
-productsContainer.addEventListener("click", event => {
-
-    if (event.target.classList.contains("add-to-cart")) {
-
-        const id = Number(event.target.dataset.id);
-
-        addToCart(id);
-
-    }
+    updateApp();
 
 });
 
-// Cart buttons
-cartItems.addEventListener("click", event => {
+
+todoList.addEventListener("click", function(event) {
+
+    const button = event.target.closest('[data-action="delete"]');
+
+    if (!button) return;
+
+    const id = Number(button.dataset.id);
+
+    setTodos(deleteTodo(todos, id));
+
+    updateApp();
+
+});
+
+
+todoList.addEventListener("change", function(event) {
+
+    if (event.target.dataset.action !== "toggle") return;
 
     const id = Number(event.target.dataset.id);
 
-    if (event.target.classList.contains("increase")) {
-        increaseQuantity(id);
-    }
+    setTodos(toggleTodo(todos, id));
 
-    if (event.target.classList.contains("decrease")) {
-        decreaseQuantity(id);
-    }
-
-    if (event.target.classList.contains("remove-btn")) {
-        removeFromCart(id);
-    }
+    updateApp();
 
 });
 
-// Clear cart button
-clearCartButton.addEventListener("click", clearCart);
 
-// Checkout button
-checkoutButton.addEventListener("click", () => {
 
-    if (cart.length === 0) {
-        alert("Your shopping cart is empty!");
-        return;
-    }
 
-    alert("Checkout successful! Thank you for shopping.");
+filterButtons.forEach(button => {
 
-    clearCart();
+    button.addEventListener("click", function() {
+
+        setFilter(button.dataset.filter);
+
+        renderTodos(todos, currentFilter);
+
+    });
 
 });
 
-// Initialize application
-displayProducts();
-displayCart();
+
+clearButton.addEventListener("click", function() {
+
+    setTodos(clearCompleted(todos));
+
+    updateApp();
+
+});
