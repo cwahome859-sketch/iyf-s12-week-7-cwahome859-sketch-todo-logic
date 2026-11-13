@@ -1,268 +1,137 @@
 
-const products = [
-    {
-        id: 1,
-        name: "Laptop",
-        price: 55000,
-        image: "https://placehold.co/300x200?text=Laptop"
-    },
-    {
-        id: 2,
-        name: "Headphones",
-        price: 2500,
-        image: "https://placehold.co/300x200?text=Headphones"
-    },
-    {
-        id: 3,
-        name: "Smartphone",
-        price: 30000,
-        image: "https://placehold.co/300x200?text=Smartphone"
-    },
-    {
-        id: 4,
-        name: "Smart Watch",
-        price: 5000,
-        image: "https://placehold.co/300x200?text=Smart+Watch"
-    }
-];
+// 1. Import state management functions
+import {
+    todos,
+    currentFilter,
+    setTodos,
+    setFilter
+} from "./state.js";
 
+// 2. Import storage functions
+import {
+    loadTodos,
+    saveTodos
+} from "./storage.js";
 
-let cart = JSON.parse(localStorage.getItem("cart")) || [];
+// 3. Import task logic functions
+import {
+    addTodo,
+    deleteTodo,
+    toggleTodo,
+    clearCompleted
+} from "./todo-logic.js";
 
+// 4. Import UI function
+import { renderTodos } from "./ui.js";
 
-const productsContainer = document.querySelector("#products-container");
-const cartItems = document.querySelector("#cart-items");
-const cartCount = document.querySelector("#cart-count");
-const cartTotal = document.querySelector("#cart-total");
-const clearCartButton = document.querySelector("#clear-cart");
-const checkoutButton = document.querySelector("#checkout");
+// 5. Select HTML elements
+const todoForm = document.querySelector("#todo-form");
+const todoInput = document.querySelector("#todo-input");
+const errorMessage = document.querySelector("#form-error");
+const todoList = document.querySelector("#todo-list");
+const taskCount = document.querySelector("#task-count");
+const clearButton = document.querySelector("#clear-completed");
+const filterButtons = document.querySelectorAll("[data-filter]");
 
-
-function displayProducts() {
-
-    productsContainer.innerHTML = "";
-
-    products.forEach(product => {
-
-        const productCard = document.createElement("div");
-
-        productCard.classList.add("product-card");
-
-        productCard.innerHTML = `
-            <img src="${product.image}" alt="${product.name}">
-
-            <h3>${product.name}</h3>
-
-            <p>KSh ${product.price.toLocaleString()}</p>
-
-            <button data-id="${product.id}" class="add-to-cart">
-                Add to Cart
-            </button>
-        `;
-
-        productsContainer.appendChild(productCard);
-
-    });
-
+// Check that required HTML elements exist
+if (
+    !todoForm ||
+    !todoInput ||
+    !errorMessage ||
+    !todoList ||
+    !taskCount ||
+    !clearButton
+) {
+    throw new Error("Some required HTML elements are missing.");
 }
 
-
-function addToCart(id) {
-
-    const product = products.find(item => item.id === id);
-
-    if (!product) return;
-
-    const existingItem = cart.find(item => item.id === id);
-
-    if (existingItem) {
-        existingItem.quantity++;
-    } else {
-        cart.push({
-            ...product,
-            quantity: 1
-        });
-    }
-
-    saveCart();
-    displayCart();
-
+// 6. Update and save the application
+function updateApp() {
+    saveTodos(todos);
+    renderTodos(todos, currentFilter);
 }
 
+// 7. Load previously saved tasks
+setTodos(loadTodos());
 
-function displayCart() {
+updateApp();
 
-    cartItems.innerHTML = "";
+// 8. Add a new task
+todoForm.addEventListener("submit", function (event) {
+    event.preventDefault();
 
-    if (cart.length === 0) {
+    const text = todoInput.value.trim();
 
-        cartItems.innerHTML = "<p>Your cart is empty.</p>";
-
-    }
-
-    cart.forEach(item => {
-
-        const cartItem = document.createElement("div");
-
-        cartItem.classList.add("cart-item");
-
-        cartItem.innerHTML = `
-            <div>
-                <h3>${item.name}</h3>
-                <p>KSh ${item.price.toLocaleString()}</p>
-            </div>
-
-            <div class="quantity-controls">
-
-                <button data-id="${item.id}" class="decrease">-</button>
-
-                <span>${item.quantity}</span>
-
-                <button data-id="${item.id}" class="increase">+</button>
-
-            </div>
-
-            <button data-id="${item.id}" class="remove-btn">
-                Remove
-            </button>
-        `;
-
-        cartItems.appendChild(cartItem);
-
-    });
-
-    updateCartSummary();
-
-}
-
-// Update cart summary
-function updateCartSummary() {
-
-    const totalItems = cart.reduce(
-        (total, item) => total + item.quantity, 0
-    );
-
-    const totalPrice = cart.reduce(
-        (total, item) => total + item.price * item.quantity, 0
-    );
-
-    cartCount.textContent = totalItems;
-
-    cartTotal.textContent = totalPrice.toLocaleString();
-
-}
-
-// Increase quantity
-function increaseQuantity(id) {
-
-    const item = cart.find(item => item.id === id);
-
-    if (item) {
-        item.quantity++;
-    }
-
-    saveCart();
-    displayCart();
-
-}
-
-
-function decreaseQuantity(id) {
-
-    const item = cart.find(item => item.id === id);
-
-    if (item) {
-
-        item.quantity--;
-
-        if (item.quantity <= 0) {
-            removeFromCart(id);
-            return;
-        }
-
-    }
-
-    saveCart();
-    displayCart();
-
-}
-
-
-function removeFromCart(id) {
-
-    cart = cart.filter(item => item.id !== id);
-
-    saveCart();
-    displayCart();
-
-}
-
-
-function clearCart() {
-
-    cart = [];
-
-    saveCart();
-    displayCart();
-
-}
-
-
-function saveCart() {
-
-    localStorage.setItem("cart", JSON.stringify(cart));
-
-}
-
-
-productsContainer.addEventListener("click", event => {
-
-    if (event.target.classList.contains("add-to-cart")) {
-
-        const id = Number(event.target.dataset.id);
-
-        addToCart(id);
-
-    }
-
-});
-
-
-cartItems.addEventListener("click", event => {
-
-    const id = Number(event.target.dataset.id);
-
-    if (event.target.classList.contains("increase")) {
-        increaseQuantity(id);
-    }
-
-    if (event.target.classList.contains("decrease")) {
-        decreaseQuantity(id);
-    }
-
-    if (event.target.classList.contains("remove-btn")) {
-        removeFromCart(id);
-    }
-
-});
-
-
-clearCartButton.addEventListener("click", clearCart);
-
-
-checkoutButton.addEventListener("click", () => {
-
-    if (cart.length === 0) {
-        alert("Your shopping cart is empty!");
+    // Validate input
+    if (text === "") {
+        errorMessage.textContent = "Please enter a task.";
+        todoInput.focus();
         return;
     }
 
-    alert("Checkout successful! Thank you for shopping.");
+    errorMessage.textContent = "";
 
-    clearCart();
+    // Generate a unique task ID
+    let id = Date.now();
 
+    while (todos.some(todo => todo.id === id)) {
+        id++;
+    }
+
+    // Add the task
+    setTodos(addTodo(todos, text, id));
+
+    // Clear input
+    todoInput.value = "";
+
+    // Update application
+    updateApp();
+
+    todoInput.focus();
 });
 
+// 9. Delete a task
+todoList.addEventListener("click", function (event) {
+    const deleteButton = event.target.closest(
+        '[data-action="delete"]'
+    );
 
-displayProducts();
-displayCart();
+    if (!deleteButton) {
+        return;
+    }
+
+    const id = Number(deleteButton.dataset.id);
+
+    setTodos(deleteTodo(todos, id));
+
+    updateApp();
+});
+
+// 10. Mark a task as completed or active
+todoList.addEventListener("change", function (event) {
+    if (event.target.dataset.action !== "toggle") {
+        return;
+    }
+
+    const id = Number(event.target.dataset.id);
+
+    setTodos(toggleTodo(todos, id));
+
+    updateApp();
+});
+
+// 11. Filter tasks
+filterButtons.forEach(function (button) {
+    button.addEventListener("click", function () {
+        setFilter(button.dataset.filter);
+
+        renderTodos(todos, currentFilter);
+    });
+});
+
+// 12. Clear completed tasks
+clearButton.addEventListener("click", function () {
+    setTodos(clearCompleted(todos));
+
+    updateApp();
+});
