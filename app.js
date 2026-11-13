@@ -1,4 +1,4 @@
-// Products
+
 const products = [
     {
         id: 1,
@@ -26,10 +26,10 @@ const products = [
     }
 ];
 
-// Shopping cart
+
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
-// DOM elements
+
 const productsContainer = document.querySelector("#products-container");
 const cartItems = document.querySelector("#cart-items");
 const cartCount = document.querySelector("#cart-count");
@@ -37,7 +37,7 @@ const cartTotal = document.querySelector("#cart-total");
 const clearCartButton = document.querySelector("#clear-cart");
 const checkoutButton = document.querySelector("#checkout");
 
-// Display products
+
 function displayProducts() {
 
     productsContainer.innerHTML = "";
@@ -66,7 +66,7 @@ function displayProducts() {
 
 }
 
-// Add product to cart
+
 function addToCart(id) {
 
     const product = products.find(item => item.id === id);
@@ -89,7 +89,7 @@ function addToCart(id) {
 
 }
 
-// Display shopping cart
+
 function displayCart() {
 
     cartItems.innerHTML = "";
@@ -166,7 +166,7 @@ function increaseQuantity(id) {
 
 }
 
-// Decrease quantity
+
 function decreaseQuantity(id) {
 
     const item = cart.find(item => item.id === id);
@@ -187,7 +187,7 @@ function decreaseQuantity(id) {
 
 }
 
-// Remove product
+
 function removeFromCart(id) {
 
     cart = cart.filter(item => item.id !== id);
@@ -197,7 +197,7 @@ function removeFromCart(id) {
 
 }
 
-// Clear shopping cart
+
 function clearCart() {
 
     cart = [];
@@ -207,14 +207,14 @@ function clearCart() {
 
 }
 
-// Save cart to localStorage
+
 function saveCart() {
 
     localStorage.setItem("cart", JSON.stringify(cart));
 
 }
 
-// Event listener for adding products
+
 productsContainer.addEventListener("click", event => {
 
     if (event.target.classList.contains("add-to-cart")) {
@@ -227,7 +227,7 @@ productsContainer.addEventListener("click", event => {
 
 });
 
-// Cart buttons
+
 cartItems.addEventListener("click", event => {
 
     const id = Number(event.target.dataset.id);
@@ -246,10 +246,10 @@ cartItems.addEventListener("click", event => {
 
 });
 
-// Clear cart button
+
 clearCartButton.addEventListener("click", clearCart);
 
-// Checkout button
+
 checkoutButton.addEventListener("click", () => {
 
     if (cart.length === 0) {
@@ -263,6 +263,6 @@ checkoutButton.addEventListener("click", () => {
 
 });
 
-// Initialize application
+
 displayProducts();
 displayCart();
