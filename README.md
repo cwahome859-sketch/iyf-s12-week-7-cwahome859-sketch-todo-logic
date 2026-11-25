@@ -50,44 +50,6 @@ todo-list/
 - Organize JavaScript functionality into modules.
 - Test application logic using Vitest.
 
-## Running the Project
-
-1. Clone the repository:
-
-```bash
-git clone YOUR_GITHUB_REPOSITORY_URL
-```
-
-2. Navigate into the project folder:
-
-```bash
-cd todo-list
-```
-
-3. Install dependencies:
-
-```bash
-npm install
-```
-
-4. Open `index.html` using VS Code Live Server.
-
-## Running Vitest Tests
-
-To run the tests:
-
-```bash
-npm test
-```
-
-To run tests once without watch mode:
-
-```bash
-npm run test:run
-```
-
-Vitest checks whether the application's functions produce the expected results.
-
 ## Challenges Faced
 
 During the development and testing of this project, I encountered several challenges:
